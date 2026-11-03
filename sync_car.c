@@ -13,7 +13,7 @@ void station_init(struct station *station){
 void station_load_car(struct station *station, int count){
     pthread_mutex_lock(&station->lock);
 
-    if (count == 0 || station->waiting == 0) {
+    if (count <= 0 || station->waiting <= 0) {
         pthread_mutex_unlock(&station->lock);
         return;
     }
