@@ -3,14 +3,14 @@
 
 #include <pthread.h>
 
-typedef struct station{
+struct station{
     pthread_mutex_t lock;
     pthread_cond_t car_arrived;
-    pthread_cond_t car_full;
+    pthread_cond_t car_full_or_done;
     int remaining_seats;
     int waiting;
     int boarding;
-} station;
+};
 
 void station_init(struct station *station);
 void station_load_car(struct station *station, int count);
