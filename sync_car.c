@@ -11,15 +11,20 @@ void station_init(struct station *station){
 }
 
 void station_load_car(struct station *station, int count){
+    pthread_mutex_lock(&station->lock);
+
     if (count == 0 || station->waiting == 0) {
+        pthread_mutex_unlock(&station->lock);
         return;
     }
-    pthread_mutex_lock(&station->lock);
+    
     station->remaining_seats = count;
     pthread_cond_broadcast(&station->car_arrived);
-    while (station->waiting > 0 && station->remaining_seats != 0) {
+    while (station->boarding != 0 || (station->remaining_seats != 0 && station->waiting > 0)) {
         pthread_cond_wait(&station->car_full_or_done, &station->lock);
     }
+
+    station->remaining_seats = 0;
     pthread_mutex_unlock(&station->lock);
 }
 
