@@ -1,4 +1,5 @@
 #include "sync_car.h"
+#include <pthread.h>
 
 void station_init(struct station *station){
     pthread_mutex_init(&station->lock, NULL);
@@ -10,11 +11,20 @@ void station_init(struct station *station){
 }
 
 void station_load_car(struct station *station, int count){
-
+    if (count == 0 || station->waiting == 0) {
+        return;
+    }
+    pthread_mutex_lock(&station->lock);
+    station->remaining_seats = count;
+    pthread_cond_broadcast(&station->car_arrived);
+    while (station->waiting > 0 && station->remaining_seats != 0) {
+        pthread_cond_wait(&station->car_full_or_done, &station->lock);
+    }
+    pthread_mutex_unlock(&station->lock);
 }
 
 void station_wait_for_car(struct station *station){
-
+    pthread_cond_wait(&station->car_arrived, &station->lock);
 }
 
 void station_on_board(struct station *station){
